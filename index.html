@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西蓮淨苑歷史自導式參學任務－第二站</title>
+    <style>
+        :root {
+            --bg-color: #f5f1e8;
+            --main-green: #496b55;
+            --text-dark: #2f352f;
+            --card-bg: #fffdf7;
+            --accent-gold: #c59b4b;
+            --correct-bg: #e7f2e7;
+            --wrong-bg: #f8e8e2;
+            --locked-gray: #d4d4d0;
+            --font-serif: "Source Han Serif TC", "標楷體", serif;
+            --font-sans: "Source Han Sans TC", "微軟正黑體", sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 720px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* 頂部固定進度列 */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #ffffff;
+            border-bottom: 2px solid #e0dcd3;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .nav-step {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--locked-gray);
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .nav-step.active {
+            background-color: var(--main-green);
+            color: #ffffff;
+        }
+
+        .nav-step.completed {
+            color: var(--accent-gold);
+        }
+
+        /* 卡牌共通格式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e8e2d5;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-gold {
+            border: 2px solid var(--accent-gold);
+            background-color: #fffdf2;
+        }
+
+        .card-title {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            color: var(--main-green);
+            font-weight: bold;
+        }
+
+        .card-subtitle {
+            font-size: 0.95rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        /* 對話框與旁白 */
+        .dialog-box {
+            background: #ffffff;
+            border-left: 4px solid var(--main-green);
+            padding: 10px 14px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+
+        .speaker {
+            font-weight: bold;
+            color: var(--main-green);
+            margin-bottom: 2px;
+            font-size: 0.9rem;
+        }
+
+        /* 信件專用樣式 */
+        .letter-paper {
+            background-color: #faf6ee;
+            border: 1px dashed var(--accent-gold);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-serif);
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        /* 多媒體響應式樣式 */
+        .responsive-img, .responsive-video {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 6px 0;
+        }
+
+        .img-caption {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: -4px;
+        }
+
+        /* 按鈕共通格式 */
+        .btn {
+            border: none;
+            border-radius: 12px;
+            height: 48px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background-color: var(--main-green);
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            border: 2px solid var(--main-green);
+            color: var(--main-green);
+        }
+
+        .btn-next {
+            background-color: var(--accent-gold);
+            color: #ffffff;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            height: 36px;
+            font-size: 0.88rem;
+            width: auto;
+            padding: 0 16px;
+        }
+
+        /* 表單與題目樣式 */
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 8px 0;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #e0dcd3;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .option-item input[type="checkbox"], .option-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--main-green);
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .feedback-box {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .feedback-correct { background-color: var(--correct-bg); color: #2d6a2f; }
+        .feedback-wrong { background-color: var(--wrong-bg); color: #a93226; }
+
+        /* 底部固定導覽 */
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid #e0dcd3;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+            z-index: 99;
+        }
+
+        /* Modal 彈出視窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- 頂部固定進度列 -->
+        <div class="top-nav">
+            <span class="nav-step completed" id="nav-p0">序章 ✓</span>
+            <span class="nav-step completed" id="nav-p1">第一站 ✓</span>
+            <span class="nav-step active" id="nav-p2">第二站</span>
+            <span class="nav-step" id="nav-p3">第三站</span>
+            <span class="nav-step" id="nav-p4">第四站</span>
+        </div>
+
+        <!-- Dynamic Content Container -->
+        <div id="game-flow" style="display: flex; flex-direction: column; gap: 16px;"></div>
+    </div>
+
+    <!-- 底部常駐列 -->
+    <div class="footer-nav">
+        <button class="btn btn-secondary btn-small" onclick="toggleLetterModal()">✉️ 查看信件進度</button>
+        <button class="btn btn-small" onclick="resetProgress()" style="background:transparent; color:#888;">重新開始</button>
+    </div>
+
+    <!-- 信件狀態彈出視窗 -->
+    <div class="modal" id="letter-modal">
+        <div class="modal-content">
+            <h3 class="card-title" style="margin-bottom: 12px;">✉️ 被雨淋濕的信</h3>
+            <div class="letter-paper" id="modal-letter-body">
+                <p><strong>第一段：</strong><span style="color:var(--main-green); font-weight:bold;">一座清淨道場，不是從華美的建築開始，而是從【願心】開始。</span></p>
+                <hr style="margin: 8px 0; border: none; border-top: 1px dashed #ccc;">
+                <p><strong>第二段：</strong><span id="m-sec2">原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的＿＿＿＿。</span></p>
+                <hr style="margin: 8px 0; border: none; border-top: 1px dashed #ccc;">
+                <p><strong>第三段：</strong>（尚未解鎖）</p>
+                <hr style="margin: 8px 0; border: none; border-top: 1px dashed #ccc;">
+                <p><strong>第四段：</strong>（尚未解鎖）</p>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 16px;" onclick="toggleLetterModal()">關閉</button>
+        </div>
+    </div>
+
+<script>
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    const defaultState = {
+        currentBlock: 'sec-p02-01',
+        letterSection2: null,
+        seal2: false,
+        station2Complete: false
+    };
+
+    let state = JSON.parse(localStorage.getItem('xilian_game_s2_state')) || defaultState;
+
+    function saveState() {
+        localStorage.setItem('xilian_game_s2_state', JSON.stringify(state));
+        updateNav();
+    }
+
+    function resetProgress() {
+        if (confirm("確定要清除目前進度，重新開始第二站任務嗎？")) {
+            localStorage.removeItem('xilian_game_s2_state');
+            state = { ...defaultState };
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function updateNav() {
+        const p2 = document.getElementById('nav-p2');
+        const p3 = document.getElementById('nav-p3');
+
+        if (state.station2Complete) {
+            p2.className = 'nav-step completed';
+            p2.innerText = '第二站 ✓';
+            if (state.currentBlock === 'sec-p03-01') {
+                p3.className = 'nav-step active';
+            }
+        } else {
+            p2.className = 'nav-step active';
+        }
+    }
+
+    function toggleLetterModal() {
+        const modal = document.getElementById('letter-modal');
+        const m2 = document.getElementById('m-sec2');
+        if (state.letterSection2) {
+            m2.innerHTML = `<span style="color:var(--main-green); font-weight:bold;">原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的【${state.letterSection2}】。</span>`;
+        }
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function switchBlock(targetId) {
+        const allBlocks = document.querySelectorAll('.card');
+        allBlocks.forEach(block => block.style.display = 'none');
+        
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.style.display = 'flex';
+            state.currentBlock = targetId;
+            saveState();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function toggleExtraVideo() {
+        const vBox = document.getElementById('extra-video-box');
+        if (vBox.style.display === 'none' || !vBox.style.display) {
+            vBox.style.display = 'block';
+        } else {
+            vBox.style.display = 'none';
+        }
+    }
+
+    function render() {
+        const container = document.getElementById('game-flow');
+        container.innerHTML = '';
+
+        // P02-01 到站確認
+        container.innerHTML += `
+            <div class="card" id="sec-p02-01">
+                <span class="card-subtitle">第二站｜三年之約</span>
+                <h2 class="card-title">樁位 1｜知客室</h2>
+                <div class="letter-paper" style="margin-bottom:8px;">
+                    <strong>前站線索：</strong>原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的＿＿＿＿。
+                </div>
+                <div class="dialog-box">
+                    <div class="speaker">馬花妹</div>
+                    <p>「約定？是誰和誰約定？」</p>
+                </div>
+                <div class="dialog-box">
+                    <div class="speaker">蓮花童子</div>
+                    <p>「信上寫著『師父交代』。這會不會和智諭老和尚的師父——道安長老有關？」</p>
+                </div>
+                <img src="H21.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=知客室地點照片';">
+                <button class="btn btn-primary" onclick="switchBlock('sec-p02-notice')">我已到達知客室</button>
+            </div>
+        `;
+
+        // P02-NOTICE 知客室參觀提醒
+        container.innerHTML += `
+            <div class="card" id="sec-p02-notice" style="display:none;">
+                <h3 class="card-title">進入知客室前，請先留意</h3>
+                <ul style="padding-left: 20px; font-size: 0.95rem; display:flex; flex-direction:column; gap:8px;">
+                    <li>請保持安靜，放低說話音量。</li>
+                    <li>請勿影響法師、志工及訪客的接待動線。</li>
+                    <li>完成觀察後，請移至不妨礙通行的位置作答。</li>
+                </ul>
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="switchBlock('sec-p02-02')">我了解了，進入第二站</button>
+            </div>
+        `;
+
+        // P02-02 第二站主視覺
+        container.innerHTML += `
+            <div class="card" id="sec-p02-02" style="display:none;">
+                <span class="card-subtitle">歷史主題：師徒付囑與道場守護｜預估時間：8-10分鐘</span>
+                <h2 class="card-title">原本只請假三年，為什麼後來沒有回去？</h2>
+                <img src="H22.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=情境示意圖：查看模糊信件';">
+                <p class="img-caption">依文稿與口述史製作之情境示意圖。</p>
+                <p>智諭老和尚原本只向道安長老請假三年，為什麼後來留在西蓮淨苑？</p>
+                <div class="letter-paper">
+                    信件待補：原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的＿＿＿＿。
+                </div>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p02-03')">開始現場觀察</button>
+            </div>
+        `;
+
+        // P02-03 現場觀察（隨機排序）
+        const rawObsOptions = [
+            { val: '1', text: '道安長老道影', correct: true },
+            { val: '2', text: '道安長老的坐床', correct: true },
+            { val: '3', text: '道安長老的按摩椅', correct: false },
+            { val: '4', text: '道安長老房間的模型', correct: false },
+            { val: '5', text: '道安長老的匾額', correct: false },
+            { val: '6', text: '道安長老的寶座', correct: false }
+        ];
+        const shuffledObsOptions = shuffleArray(rawObsOptions);
+        let obsHtml = shuffledObsOptions.map(opt => `
+            <label class="option-item">
+                <input type="checkbox" class="obs-ans" value="${opt.val}" data-correct="${opt.correct}"> ${opt.text}
+            </label>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p02-03" style="display:none;">
+                <h3 class="card-title">🔍 現場觀察</h3>
+                <p>請安靜觀察知客室內的陳設。有哪些物件與道安長老有關？（複選）</p>
+                <div class="option-group">${obsHtml}</div>
+                <button class="btn btn-primary" onclick="checkObservation()">確認觀察結果</button>
+                <div id="obs-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="obs-next-btn" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p02-04')">查看信中的零散文字</button>
+            </div>
+        `;
+
+        // P02-04 故事開場
+        container.innerHTML += `
+            <div class="card" id="sec-p02-04" style="display:none;">
+                <p>蓮花童子與馬花妹循著信紙上的線索，看完了道安長老的資料。</p>
+                <div class="dialog-box"><div class="speaker">馬花妹</div><p>「這裡好像沒有什麼特別的。」</p></div>
+                <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「信上寫著『師父交代』，道安長老會交代什麼啊？」</p></div>
+                <div class="letter-paper">信件線索：住山……不能回去……看守……</div>
+                <div class="dialog-box"><div class="speaker">馬花妹</div><p>「不能回去？老和尚會不會被道安長老處罰，不能回去？」</p></div>
+                <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「老和尚既尊師重道，又一心念佛，我們不要只看幾個字就亂猜。而且，『不能回去』也可能不是責罰。」</p></div>
+                <div class="dialog-box"><div class="speaker">馬花妹</div><p>「那會是什麼原因啊？」</p></div>
+                <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「我們得找出這三年之間，發生了什麼。」</p></div>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p02-05')">查看三年之約</button>
+            </div>
+        `;
+
+        // P02-05 歷史資料與圖文
+        container.innerHTML += `
+            <div class="card" id="sec-p02-05" style="display:none;">
+                <h3 class="card-title">看一看｜從請假三年到留在淨苑</h3>
+                <p>道安長老並不是一開始就要求智諭老和尚永久留在三峽。讓我們一起來認識這段歷史。</p>
+                <img src="H23.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=道安長老與智諭老和尚合照';">
+                <div class="letter-paper" style="font-size:0.9rem; max-height:220px; overflow-y:auto;">
+                    <strong>起間茅蓬念佛去〈西蓮西蓮〉：</strong><br>
+                    「那是民國六十一年春天，那時我住松山寺。承蒙恒一法師，讓給我四百四十四坪山地。我喜這兒有一道山泉水，心想，在這兒清修倒是好地方。於是以八萬元成交了。<br>
+                    回松山寺後，到方丈室見師父。<br>
+                    『師父！我買了塊山地，打算起間茅蓬念佛去。』<br>
+                    師父一面忙著手邊的事情，一面回答：『年輕人學佛，住山清修，是件好事情！』<br>
+                    轉眼間到了年底，幾間平房已經完成。於是向當家師靈根法師告假。靈根法師說：『你應該先向師父請假！』<br>
+                    於是再度進方丈室，向師父說明來意。師父沉吟半天說：『好吧！我准你三年假，三年後得回來！』<br>
+                    『我知道你住不慣經懺道場。其實我當初的志願，亦不是建立經懺道場。這都是不得已……請假三年，我不希望你在外邊趕經懺！如果道糧不繼。只管關起門來念佛，自有龍天護法……』當時含淚離開方丈室。」
+                </div>
+                <div style="background:#fff; border:1px solid #ddd; padding:10px; border-radius:8px; margin-top:8px;">
+                    <p style="color:var(--main-green); font-weight:bold; font-size:0.9rem; margin-bottom:4px;">🎬 影音紀錄：智諭老和尚創建淨苑及道安長老的期許</p>
+                    <video controls playsinline class="responsive-video">
+                        <source src="v2.mp4" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
+                </div>
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="switchBlock('sec-p02-06')">我看完了，開始任務一</button>
+            </div>
+        `;
+
+        // P02-06 任務一：事件排序（動態生成隨機選項）
+        const rawTask1Options = [
+            { val: 'A', text: '道安長老親自來到西蓮淨苑察看' },
+            { val: 'B', text: '智諭老和尚向道安長老稟告，想前往三峽起間茅蓬住山念佛' },
+            { val: 'C', text: '智諭老和尚正式向師父請假三年' },
+            { val: 'D', text: '道安長老付囑智諭老和尚看守此地' }
+        ];
+        const shuffledTask1Options = shuffleArray(rawTask1Options);
+        const task1OptionsHtml = shuffledTask1Options.map(opt => `<option value="${opt.val}">${opt.text}</option>`).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p02-06" style="display:none;">
+                <h3 class="card-title">🎯 任務一｜三年之間發生了什麼？</h3>
+                <p>請將下列四件事情依照歷史發生的先後順序排列：</p>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                    <div><strong>第 1 步：</strong>
+                        <select id="seq-1">
+                            <option value="">-- 請選擇第一個發生的事件 --</option>
+                            ${task1OptionsHtml}
+                        </select>
+                    </div>
+                    <div><strong>第 2 步：</strong>
+                        <select id="seq-2">
+                            <option value="">-- 請選擇第二個發生的事件 --</option>
+                            ${task1OptionsHtml}
+                        </select>
+                    </div>
+                    <div><strong>第 3 步：</strong>
+                        <select id="seq-3">
+                            <option value="">-- 請選擇第三個發生的事件 --</option>
+                            ${task1OptionsHtml}
+                        </select>
+                    </div>
+                    <div><strong>第 4 步：</strong>
+                        <select id="seq-4">
+                            <option value="">-- 請選擇第四個發生的事件 --</option>
+                            ${task1OptionsHtml}
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="checkTask1()">確認時間順序</button>
+                <div id="t1-s2-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t1-s2-next" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p02-07')">下一頁：進入任務二</button>
+            </div>
+        `;
+
+        // P02-07 故事銜接 & 任務二：復原句（動態生成隨機選項）
+        const rawTask2Options = [
+            { val: 'A', text: '因為離不開' },
+            { val: 'B', text: '你就看守這個地方罷' },
+            { val: 'C', text: '智諭' },
+            { val: 'D', text: '我看你不能回松山寺了' }
+        ];
+        const shuffledTask2Options = shuffleArray(rawTask2Options);
+        const task2OptionsHtml = shuffledTask2Options.map(opt => `<option value="${opt.val}">${opt.text}</option>`).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p02-07" style="display:none;">
+                <div class="dialog-box"><div class="speaker">馬花妹</div><p>「所以，道安長老不是一開始就要他永遠留下。」</p></div>
+                <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「是先了解弟子的志向，再親自察看這裡後，才讓老和尚留下。」</p></div>
+                
+                <h3 class="card-title" style="margin-top:10px;">🎯 任務二｜被雨水沖散的一句話</h3>
+                <p>信中引用了一段道安長老的話，請將四個片段排成完整內容：</p>
+                
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+                    <div><strong>第 1 段：</strong>
+                        <select id="sent-1">
+                            <option value="">-- 請選擇片段 --</option>
+                            ${task2OptionsHtml}
+                        </select>
+                    </div>
+                    <div><strong>第 2 段：</strong>
+                        <select id="sent-2">
+                            <option value="">-- 請選擇片段 --</option>
+                            ${task2OptionsHtml}
+                        </select>
+                    </div>
+                    <div><strong>第 3 段：</strong>
+                        <select id="sent-3">
+                            <option value="">-- 請選擇片段 --</option>
+                            ${task2OptionsHtml}
+                        </select>
+                    </div>
+                    <div><strong>第 4 段：</strong>
+                        <select id="sent-4">
+                            <option value="">-- 請選擇片段 --</option>
+                            ${task2OptionsHtml}
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="checkTask2()">復原這句話</button>
+                <div id="t2-s2-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t2-s2-next" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p02-08')">下一頁：找出「回不去」的原因</button>
+            </div>
+        `;
+
+        // P02-08 任務三：邏輯判斷
+        const rawTask3Options = [
+            { val: 'A', text: '智諭老和尚不想搬家', correct: false },
+            { val: 'B', text: '西蓮淨苑已有住眾與修學活動，需要有人守護', correct: true },
+            { val: 'C', text: '三峽距離松山寺很遠', correct: false },
+            { val: 'D', text: '道安長老喜歡西蓮淨苑的風景', correct: false }
+        ];
+        const shuffledTask3Options = shuffleArray(rawTask3Options);
+        let task3Html = shuffledTask3Options.map(opt => `
+            <label class="option-item">
+                <input type="radio" name="t3_s2_rad" value="${opt.val}"> ${opt.text}
+            </label>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p02-08" style="display:none;">
+                <h3 class="card-title">🎯 任務三｜為什麼回不去？</h3>
+                <p>以下哪項證據最能說明智諭老和尚「不能回松山寺」的理由？</p>
+                <div class="option-group">${task3Html}</div>
+                <button class="btn btn-primary" onclick="checkTask3()">確認答案</button>
+                <div id="t3-s2-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t3-s2-next" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p02-09')">下一頁：任務四</button>
+            </div>
+        `;
+
+        // P02-09 任務四：字輩配對與意義（延伸思考題動態隨機化）
+        const rawTask4ExtOptions = [
+            { val: 'A', text: '想替未來弟子取容易記住的名字。' },
+            { val: 'B', text: '代表他已看見此地可能形成僧團，並延續師承與佛法。' },
+            { val: 'C', text: '所有徒子徒孫都必須使用完全相同的名字。' },
+            { val: 'D', text: '道安長老會姓名學。' }
+        ];
+        const shuffledTask4ExtOptions = shuffleArray(rawTask4ExtOptions);
+        let task4ExtHtml = shuffledTask4ExtOptions.map(opt => `
+            <label class="option-item"><input type="radio" name="t4_ext" value="${opt.val}"> ${opt.text}</label>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p02-09" style="display:none;">
+                <h3 class="card-title">🎯 任務四｜惠／慧字輩配對與意義</h3>
+                <p>道安長老曾指示，智諭老和尚未來收徒時，男眾與女眾分別使用哪一個字？</p>
+                
+                <div style="margin-top:8px;">
+                    <p><strong>男眾法名字輩：</strong></p>
+                    <select id="gen-male">
+                        <option value="">-- 請選擇 --</option>
+                        <option value="惠">惠</option>
+                        <option value="慧">慧</option>
+                    </select>
+                </div>
+
+                <div style="margin-top:8px;">
+                    <p><strong>女眾法名字輩：</strong></p>
+                    <select id="gen-female">
+                        <option value="">-- 請選擇 --</option>
+                        <option value="惠">惠</option>
+                        <option value="慧">慧</option>
+                    </select>
+                </div>
+
+                <hr style="border:none; border-top:1px dashed #ccc; margin:12px 0;">
+
+                <p><strong>思考延伸：為什麼道安長老會連未來弟子的字輩都定下來？</strong></p>
+                <div class="option-group">
+                    ${task4ExtHtml}
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="checkTask4()">確認答案</button>
+                <div id="t4-s2-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t4-s2-next" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p02-10')">下一頁：復原第二段信件</button>
+            </div>
+        `;
+
+        // P02-10 第二段信件補寫
+        const rawFillOptions = [
+            { val: '放逐', text: '放逐' },
+            { val: '承擔', text: '承擔' },
+            { val: '等待', text: '等待' },
+            { val: '願行', text: '願行' }
+        ];
+        const shuffledFillOptions = shuffleArray(rawFillOptions);
+        let fillHtml = shuffledFillOptions.map(opt => `
+            <label class="option-item">
+                <input type="radio" name="word2" value="${opt.val}"> ${opt.text}
+            </label>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p02-10" style="display:none;">
+                <h3 class="card-title">✉️ 第二段信件復原</h3>
+                <p>願心要走得長遠，不能只靠開始時的熱情。</p>
+                <div class="letter-paper" style="margin-top:6px;">
+                    原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的<span style="color:var(--main-green); font-weight:bold; text-decoration:underline;">＿＿＿＿</span>：建設一座不為名、不為利，能讓少有所學、壯有所用、老有所安、死有所葬的道場。
+                </div>
+                <p style="margin-top:8px;">請選擇最合適的詞語填入信件：</p>
+                <div class="option-group">${fillHtml}</div>
+                <button class="btn btn-primary" onclick="checkFillTask()">填入信件</button>
+                <div id="fill-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="fill-next-btn" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p02-seal')">下一頁：獲得通關印記</button>
+            </div>
+        `;
+
+        // P02-SEAL 印記與參學反思及末端延伸影片
+        container.innerHTML += `
+            <div class="card card-gold" id="sec-p02-seal" style="display:none;">
+                <h3 class="card-title" style="text-align:center;">🎉 獲得第二枚信件印記！</h3>
+                <img src="H24.jpg" alt="願行之印" class="responsive-img" style="max-width:180px; margin:0 auto;" onerror="this.src='https://placehold.co/200x200/c59b4b/fff?text=願行之印';">
+                <p style="text-align:center; font-weight:bold; color:var(--accent-gold);">印記收集：【願行之印】</p>
+                <p style="font-size:0.9rem; text-align:center; color:#555;">願行，是將心中的願望化為長久實踐，在困難中仍守住方向，持續利益大眾。</p>
+
+                <div class="letter-paper" style="margin-top:8px;">
+                    「原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的<strong>願行</strong>。」
+                </div>
+
+                <hr style="border:none; border-top:1px dashed #ccc; margin:12px 0;">
+
+                <h4 style="color:var(--main-green);">💭 個人反思：我想守住什麼？</h4>
+                <p style="font-size:0.88rem;">智諭老和尚面對道糧與生活困難，仍努力守住住山念佛與安心辦道的方向。</p>
+                
+                <div style="margin-top:6px;">
+                    <label style="font-size:0.88rem; font-weight:bold;">如果環境變得困難，我最希望自己守住：</label>
+                    <input type="text" id="s2-reflect-1" placeholder="例如：誠實、對學習的熱情、關心他人...">
+                </div>
+
+                <div style="margin-top:6px;">
+                    <label style="font-size:0.88rem; font-weight:bold;">可能遇到的困難：</label>
+                    <input type="text" id="s2-reflect-2" placeholder="例如：時間不夠、遭遇挫折、旁人反對...">
+                </div>
+
+                <div style="margin-top:6px;">
+                    <label style="font-size:0.88rem; font-weight:bold;">提醒自己的方法：</label>
+                    <input type="text" id="s2-reflect-3" placeholder="例如：寫下筆記、尋求朋友支持...">
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="submitS2Reflection()">收好我的願行</button>
+                
+                <div id="s2-reflect-fb" class="feedback-box feedback-correct" style="margin-top:10px;">
+                    <strong>願行不是永遠不遇到困難，而是在困難中仍記得最初的重要方向。</strong>
+                </div>
+
+                <div id="s2-next-station-box" style="display:none; margin-top:12px; border-top:1px solid #e0dcd3; padding-top:12px;">
+                    <div class="dialog-box"><div class="speaker">馬花妹</div><p>「我原本以為，智諭老和尚念佛三年，就已經完成心願了。」</p></div>
+                    <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「老和尚有了願心，還繼續精進走下去。道安長老也不只是要老和尚『留下來』，而是守護佛法、安住僧眾，也讓後來的人繼續有修學的因緣。」</p></div>
+                    
+                    <div class="letter-paper" style="margin-top:8px;">
+                        <strong>第三站線索：</strong>沒有房間……自己搭建……／竹子……草寮……／會漏雨的寶殿……
+                    </div>
+                    <p style="font-size:0.88rem; color:#555; margin-top:6px;">📍 下一站地點：<strong>樁位 2｜大殿與寶殿（懷安堂與壹波堂）</strong></p>
+                    <img src="H25.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=前往第三站地圖路線';">
+                    
+                    <!-- 選擇性觀賞影片區塊（放在第二站最後面） -->
+                    <div style="margin-top: 14px; background: #ffffff; border: 1px solid var(--accent-gold); border-radius: 8px; padding: 12px;">
+                        <button class="btn btn-secondary btn-small" style="width: 100%; border-style: dashed;" onclick="toggleExtraVideo()">
+                            🎬 延伸觀看｜道安長老的攝受力與定力（選看，不影響通關）
+                        </button>
+                        <div id="extra-video-box" style="display: none; margin-top: 10px;">
+                            <video controls playsinline class="responsive-video">
+                                <source src="v3.mp4" type="video/mp4">
+                                您的瀏覽器不支援影片播放。
+                            </video>
+                            <p class="img-caption" style="text-align: center; margin-top: 4px;">歷史紀錄片段：道安長老之攝受力與定力</p>
+                        </div>
+                    </div>
+
+                    <p style="font-size:0.8rem; color:#888; margin-top:10px;">⚠️ 提醒：離開知客室前請確認未留下物品，行走時請收起手機。</p>
+                    <button class="btn btn-next" style="margin-top:8px;" onclick="goToStation3()">進入下一頁：前往第三站</button>
+                </div>
+            </div>
+        `;
+
+        // P03-01 第三站預留畫面
+        container.innerHTML += `
+            <div class="card" id="sec-p03-01" style="display:none;">
+                <span class="card-subtitle">第三站｜大殿與寶殿</span>
+                <h2 class="card-title">樁位 2｜懷安堂與壹波堂</h2>
+                <img src="H26.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=第三站地點照片';">
+                <p>你已順利到達第三站！請準備好探索接下來的故事……</p>
+            </div>
+        `;
+
+        switchBlock(state.currentBlock || 'sec-p02-01');
+    }
+
+    // 現場觀察檢測
+    function checkObservation() {
+        const inputs = Array.from(document.querySelectorAll('.obs-ans'));
+        const fb = document.getElementById('obs-fb');
+        const nextBtn = document.getElementById('obs-next-btn');
+
+        let allCorrect = true;
+        let selectedWrong = false;
+
+        inputs.forEach(input => {
+            const isCorrect = input.getAttribute('data-correct') === 'true';
+            if (input.checked && !isCorrect) {
+                selectedWrong = true;
+                allCorrect = false;
+            }
+            if (!input.checked && isCorrect) {
+                allCorrect = false;
+            }
+        });
+
+        fb.style.display = 'block';
+        if (allCorrect) {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 你找到了道安長老的線索！道安長老是智諭老和尚的師父，透過知客室中的展示，可以進一步認識道安長老。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            fb.innerHTML = '❌ 請再仔細觀察。哪些物件是現場真正陳設，而且與道安長老本人直接相關？';
+        }
+    }
+
+    // 任務一：排序檢測
+    function checkTask1() {
+        const s1 = document.getElementById('seq-1').value;
+        const s2 = document.getElementById('seq-2').value;
+        const s3 = document.getElementById('seq-3').value;
+        const s4 = document.getElementById('seq-4').value;
+        const fb = document.getElementById('t1-s2-fb');
+        const nextBtn = document.getElementById('t1-s2-next');
+
+        fb.style.display = 'block';
+        if (s1 === 'B' && s2 === 'C' && s3 === 'A' && s4 === 'D') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 三年之約的順序正確！道安長老尊重並了解智諭老和尚住山念佛的志向，提醒他守住修行方向；三年期滿前又親自察看西蓮淨苑的實際情況，最後才交付看守道場的責任。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            fb.innerHTML = '❌ 時間順序不太對喔。提示：道安長老並不是一開始就要求智諭老和尚長期留在三峽，請再對照歷史資料排列一次。';
+        }
+    }
+
+    // 任務二：復原句檢測
+    function checkTask2() {
+        const s1 = document.getElementById('sent-1').value;
+        const s2 = document.getElementById('sent-2').value;
+        const s3 = document.getElementById('sent-3').value;
+        const s4 = document.getElementById('sent-4').value;
+        const fb = document.getElementById('t2-s2-fb');
+        const nextBtn = document.getElementById('t2-s2-next');
+
+        fb.style.display = 'block';
+        if (s1 === 'C' && s2 === 'D' && s3 === 'A' && s4 === 'B') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 師父的話已復原：「智諭，我看你不能回松山寺了，因為離不開。你就看守這個地方罷！」<br>原來道安長老真的說了「不能回松山寺」。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            fb.innerHTML = '❌ 句子語意不太通順喔。提示：請先找出人物對象，再接上「不能回松山寺」的原因，最後才是師父交付的行動。';
+        }
+    }
+
+    // 任務三：邏輯單選檢測
+    function checkTask3() {
+        const selected = document.querySelector('input[name="t3_s2_rad"]:checked');
+        const fb = document.getElementById('t3-s2-fb');
+        const nextBtn = document.getElementById('t3-s2-next');
+
+        if (!selected) {
+            alert("請選擇一個選項！");
+            return;
+        }
+
+        fb.style.display = 'block';
+        if (selected.value === 'B') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 完全正確！你找到了「離不開」的真正原因。「離不開」不是地理距離，也不是智諭老和尚個人的喜好，而是道場已有住眾與修學大眾，需要有人繼續承擔。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            fb.innerHTML = '❌ 請回想這三年中發生的變化。哪一個選項和「住眾、修學、道場責任」直接相關？';
+        }
+    }
+
+    // 任務四：配對與延伸檢測
+    function checkTask4() {
+        const male = document.getElementById('gen-male').value;
+        const female = document.getElementById('gen-female').value;
+        const ext = document.querySelector('input[name="t4_ext"]:checked');
+        const fb = document.getElementById('t4-s2-fb');
+        const nextBtn = document.getElementById('t4-s2-next');
+
+        if (!male || !female || !ext) {
+            alert("請完成字輩選擇與思考延伸題！");
+            return;
+        }
+
+        fb.style.display = 'block';
+        if (male === '惠' && female === '慧' && ext.value === 'B') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 回答完全正確！男眾為「惠」、女眾為「慧」。字輩不只是名字的一部分，當道安長老開始為未來弟子安排字輩，表示他所看見的已不只是個人的住山生活，而是一個逐漸形成的僧團與傳承。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            let errText = '❌ ';
+            if (male !== '惠' || female !== '慧') errText += '字輩選擇有誤（男眾為「惠」、女眾為「慧」）；';
+            if (ext.value !== 'B') errText += '思考延伸題請想想字輩背後的僧團與傳承意義。';
+            fb.innerHTML = errText;
+        }
+    }
+
+    // 填空檢測
+    function checkFillTask() {
+        const selected = document.querySelector('input[name="word2"]:checked');
+        const fb = document.getElementById('fill-fb');
+        const nextBtn = document.getElementById('fill-next-btn');
+
+        if (!selected) {
+            alert("請先選擇一個詞語！");
+            return;
+        }
+
+        fb.style.display = 'block';
+        if (selected.value === '願行') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '🎉 第二段信件復原成功！「願」是發起的方向，「行」是長久的實踐。智諭老和尚將住山念佛的願心，落實為一生護法安僧、弘化利生的願行。';
+            state.letterSection2 = '願行';
+            state.seal2 = true;
+            state.station2Complete = true;
+            saveState();
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            if (selected.value === '放逐') fb.innerHTML = '選擇「放逐」：道安長老並不是放逐智諭老和尚，而是賦予深切期盼與守護道場的責任。';
+            else if (selected.value === '承擔') fb.innerHTML = '選擇「承擔」：「承擔」接近這段歷史的意義，但信中還要表達：願心不只停留在心中，而是化為一生持續實踐的行動。';
+            else if (selected.value === '等待') fb.innerHTML = '選擇「等待」：智諭老和尚並不是被動等待道場形成，而是長期投入護法安僧與弘化利生。';
+        }
+    }
+
+    // 個人反思提交
+    function submitS2Reflection() {
+        const r1 = document.getElementById('s2-reflect-1').value.trim();
+        const r2 = document.getElementById('s2-reflect-2').value.trim();
+        const r3 = document.getElementById('s2-reflect-3').value.trim();
+
+        if (!r1 || !r2 || !r3) {
+            alert("請填寫完成三個反思空格喔！");
+            return;
+        }
+
+        document.getElementById('s2-reflect-fb').style.display = 'block';
+        document.getElementById('s2-next-station-box').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('s2-next-station-box').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+
+    // 跳轉至第三站
+    function goToStation3() {
+        switchBlock('sec-p03-01');
+    }
+
+    window.onload = function() {
+        render();
+    };
+</script>
+</body>
+</html>
